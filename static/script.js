@@ -29,7 +29,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 const generateTable = (jsonData, status) => {
     if (status === 200) {
-        return generateStrongholdTable(jsonData.stronghold, jsonData.useChunk, jsonData.angle);
+        return generateStrongholdTable(jsonData.stronghold, jsonData.useChunk);
     } else if (status === 210) {
         return generateMisreadMessageTable(jsonData.stronghold);
     } else if (status === 220) {
@@ -37,7 +37,7 @@ const generateTable = (jsonData, status) => {
     } else if (status === 230) {
         return generateDivineTable(jsonData.divine);
     } else if (status === 250) {
-        return generateIdleTable(jsonData.useChunk, jsonData.angle);
+        return generateIdleTable(jsonData.useChunk);
     }
     return '';
 }
@@ -60,41 +60,113 @@ const generateTableHTML = (headers, bodyRows) => `
             ${bodyRows.join('')}
         </tbody>
     </table>
+    <div id="eye-throws-bar">
+        <span>Ender eye throws</span>
+        <div id="eye-throws-buttons">
+            <button id="undo-button" class="eye-throw-button">Undo</button>
+            <button id="redo-button" class="eye-throw-button">Redo</button>
+            <button id="reset-button" class="eye-throw-button">Reset</button>
+        </div>
+    </div>
+    <div id="sub-bar">
+        <div class="eye_throw_stats">x</div>
+        <div class="eye_throw_stats">z</div>
+        <div class="eye_throw_stats">Angle</div>
+        <div class="eye_throw_stats">Error</div>
+    </div>
+    <div id="location-grid">
+        ${bodyRows.join('')}
+    </div>
 `;
+
+document.addEventListener('DOMContentLoaded', function () {
+    const undoButton = document.getElementById('undo-button');
+    const redoButton = document.getElementById('redo-button');
+    const resetButton = document.getElementById('reset-button');
+
+    if (undoButton) {
+        undoButton.addEventListener('click', () => {
+            console.log('Undo clicked');
+        });
+    } else {
+        console.error('undo-button element not found');
+    }
+
+    if (redoButton) {
+        redoButton.addEventListener('click', () => {
+            console.log('Redo clicked');
+        });
+    } else {
+        console.error('redo-button element not found');
+    }
+
+    if (resetButton) {
+        resetButton.addEventListener('click', () => {
+            console.log('Reset clicked');
+        });
+    } else {
+        console.error('reset-button element not found');
+    }
+});
 
 const generateRowHTML = (cells) => `
     <tr>${cells.map(cell => `<td>${cell}</td>`).join('')}</tr>
 `;
 
-const generateStrongholdTable = (jsonData, toggleLocation, showAngle) => {
+const generateStrongholdTable = (jsonData, toggleLocation) => {
     const headers = [
         toggleLocation ? 'Chunk' : 'Location',
         '%', 'Dist.', `Nether`,
-        showAngle ? `Angle` : ""
     ].filter(Boolean);
 
     const bodyRows = jsonData.predictions.map(prediction => {
         const certainty = (prediction.certainty * 100).toFixed(1);
         const certaintyColor = getCertaintyColor(certainty);
 
-        const angleHTML = showAngle ? 
-            `${prediction.angle}
-            <span style="color: ${getColorForDirection(prediction.direction)};">
-                (${prediction.direction ? (prediction.direction > 0 ? "-> " : "<- ") + Math.abs(prediction.direction).toFixed(1) : "N/A"})
-            </span>` 
-            : "";
+        // TODO
+        // const angleHTML = showAngle ?
+        //     `${prediction.angle}
+        //     <span style="color: ${getColorForDirection(prediction.direction)};">
+        //         (${prediction.direction ? (prediction.direction > 0 ? "-> " : "<- ") + Math.abs(prediction.direction).toFixed(1) : "N/A"})
+        //     </span>`
+        //     : "";
 
         return generateRowHTML([
             `(${prediction.x}, ${prediction.z})`,
             `<span style="color:${certaintyColor}">${certainty}%</span>`,
             `${Math.round(prediction.overworldDistance)}`,
-            `(${prediction.netherX}, ${prediction.netherZ})`,
-            angleHTML
+            `(${prediction.netherX}, ${prediction.netherZ})`
         ]);
     });
 
+    updateSubBar(jsonData.predictions);
+
     return generateTableHTML(headers, bodyRows);
 };
+
+const updateSubBar = (predictions) => {
+    const subBar = document.getElementById('sub-bar');
+    if (!subBar) {
+        console.error('sub-bar element not found');
+        return;
+    }
+
+    const angleData = predictions.map(prediction => {
+        const angleHTML = `${prediction.angle}
+            <span style="color: ${getColorForDirection(prediction.direction)};">
+                (${prediction.direction ? (prediction.direction > 0 ? "-> " : "<- ") + Math.abs(prediction.direction).toFixed(1) : "N/A"})
+            </span>`;
+        return generateRowHTML([angleHTML]);
+    }).join('');
+
+    subBar.innerHTML = `
+        <div class="eye_throw_stats">x</div>
+        <div class="eye_throw_stats">z</div>
+        <div class="eye_throw_stats">Angle</div>
+        <div class="eye_throw_stats">Error</div>
+        ${angleData}
+    `;
+}
 
 const generateMisreadMessageTable = (jsonData) => {
     const headers = ["&nbsp;"];
@@ -146,15 +218,14 @@ const generateDivineTable = (jsonData) => {
     return generateTableHTML(headers, bodyRows);
 }
 
-const generateIdleTable = (toggleLocation, showAngle) => {
+const generateIdleTable = (toggleLocation) => {
     const headers = [
         toggleLocation ? 'Chunk' : 'Location',
-        '%', 'Dist.', `Nether`,
-        showAngle ? `Angle` : ""
+        '%', 'Dist.', `Nether`
     ].filter(Boolean);
 
     const bodyRows = Array(5).fill(generateRowHTML([
-        '&nbsp;', '&nbsp;', '&nbsp;', '&nbsp;', showAngle ? '&nbsp;' : ''
+        '&nbsp;', '&nbsp;', '&nbsp;', '&nbsp;'
     ]));
 
     return generateTableHTML(headers, bodyRows);

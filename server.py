@@ -232,7 +232,7 @@ sse_fetcher = DataFetcher()
 sse_fetcher.start()
 
 server_options = {
-    'use_chunk_coords': True,
+    'use_chunk_coords': False,
     'show_angle': True
 }
 
