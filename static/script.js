@@ -62,16 +62,21 @@ const generateHeaderHTML = (version, boatState) => `
     </div>
 `;
 
-const generateTableHTML = (headers, bodyRows) => `
-    <table id="data">
-        <thead>
-            <tr>${headers.map(header => `<th>${header}</th>`).join('')}</tr>
-        </thead>
-        <tbody>
-            ${bodyRows.join('')}
-        </tbody>
-    </table>
-`;
+const generateTableHTML = (headers, bodyRows, headerWidths = undefined) => {
+    const width = Array.isArray(headerWidths) && headerWidths.length === headers.length
+        ? headerWidths : Array(headers.length).fill(100 / headers.length);
+
+    return `
+        <table id="data">
+            <thead>
+                <tr>${headers.map((header, index) => `<th style="width: ${width[index]}%;">${header}</th>`).join('')}</tr>
+            </thead>
+            <tbody>
+                ${bodyRows.join('')}
+            </tbody>
+        </table>
+    `;
+};
 
 const generateRowHTML = (cells) => `
     <tr>${cells.map(cell => `<td>${cell}</td>`).join('')}</tr>
@@ -98,13 +103,14 @@ const generateStrongholdTable = (jsonData, toggleLocation, showAngle) => {
         return generateRowHTML([
             `(${prediction.x}, ${prediction.z})`,
             `<span style="color:${certaintyColor}">${certainty}%</span>`,
-            `${Math.round(prediction.overworldDistance)}`,
+            `${Math.round(prediction.distance)}`,
             `(${prediction.netherX}, ${prediction.netherZ})`,
             angleHTML
         ]);
     });
 
-    return generateTableHTML(headers, bodyRows);
+    const headerWidths = showAngle ? [26, 13, 13, 22, 26] : [32, 18, 18, 32];
+    return generateTableHTML(headers, bodyRows, headerWidths);
 };
 
 const generateMisreadMessageTable = () => {
@@ -168,7 +174,8 @@ const generateIdleTable = (toggleLocation, showAngle) => {
         '&nbsp;', '&nbsp;', '&nbsp;', '&nbsp;', showAngle ? '&nbsp;' : ''
     ]));
 
-    return generateTableHTML(headers, bodyRows);
+    const headerWidths = showAngle ? [26, 13, 13, 22, 26] : [32, 18, 18, 32];
+    return generateTableHTML(headers, bodyRows, headerWidths);
 }
 
 const getCertaintyColor = (certainty) => {

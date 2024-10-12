@@ -5,8 +5,6 @@ import os
 import copy
 import math
 import logging
-import re
-import pyperclip
 import requests
 
 from flask import Flask, jsonify, request, render_template
@@ -77,57 +75,48 @@ def load_options():
         server_options = json.load(f)
 
 def radians_to_degrees(radians):
-    return round(radians * (180 / math.pi), 1)
+    return '{:.1f}'.format(round(radians * (180 / math.pi), 1))
 
 def get_predictions(data):
     predictions = []
-    command = pyperclip.paste()
-    match = re.match(r'^/execute in minecraft:(overworld|the_nether) run tp @s [-+]?[0-9]*\.?[0-9]+ [-+]?[0-9]*\.?[0-9]+ [-+]?[0-9]*\.?[0-9]+ [-+]?[0-9]*\.?[0-9]+ [-+]?[0-9]*\.?[0-9]+$', command)
     
-    if match:
-        dimension = match.group(1)
-        coords_and_angle = get_coords_and_angle(command)
+    for pred in data['predictions']:
+        chunkX = pred['chunkX']
+        chunkZ = pred['chunkZ']
 
-        if coords_and_angle and all(item is not None for item in coords_and_angle):
-            current_position = (coords_and_angle[0], coords_and_angle[1])
-            current_angle = coords_and_angle[2]
-
-            for pred in data['predictions']:
-                chunkX = pred['chunkX']
-                chunkZ = pred['chunkZ']
-                target_position = ((chunkX * 16) + 4, (chunkZ * 16) + 4)
-
-                if dimension == "the_nether":
-                    distance = round(pred['overworldDistance'] / 8)
-                else:
-                    distance = pred['overworldDistance']
-
-                predictions.append({
-                    "certainty": pred['certainty'],
-                    "x": chunkX if server_options['use_chunk_coords'] else (chunkX * 16 + 4),
-                    "z": chunkZ if server_options['use_chunk_coords'] else (chunkZ * 16 + 4),
-                    "netherX": chunkX * 2,
-                    "netherZ": chunkZ * 2,
-                    "overworldDistance": distance,
-                    "angle": round(get_direction(current_position, target_position), 2) if server_options['show_angle'] else None,
-                    "direction": round(get_direction(current_position, target_position, current_angle), 2)
-                })
-    else:
-        for pred in data['predictions']:
-            chunkX = pred['chunkX']
-            chunkZ = pred['chunkZ']
-
-            predictions.append({
-                "certainty": pred['certainty'],
-                "x": chunkX if server_options['use_chunk_coords'] else (chunkX * 16 + 4),
-                "z": chunkZ if server_options['use_chunk_coords'] else (chunkZ * 16 + 4),
-                "netherX": chunkX * 2,
-                "netherZ": chunkZ * 2,
-                "overworldDistance": pred['overworldDistance'],
-                "angle": None,
-                "direction": None
-            })
-
+        player_position = data.get('playerPosition', {})
+        current_position = (
+            player_position.get('xInOverworld', None),
+            player_position.get('zInOverworld', None)
+        )
+        target_position = ((chunkX * 16) + 4, (chunkZ * 16) + 4)
+        current_angle = player_position.get('horizontalAngle', None)
+        
+        distance = pred['overworldDistance']
+        if player_position.get('isInNether'):
+            distance /= 8
+        
+        predictions.append({
+            "certainty": pred['certainty'],
+            "x": chunkX if server_options['use_chunk_coords'] else (chunkX * 16 + 4),
+            "z": chunkZ if server_options['use_chunk_coords'] else (chunkZ * 16 + 4),
+            "netherX": chunkX * 2,
+            "netherZ": chunkZ * 2,
+            "distance": distance,         
+            "angle": (
+                '{:.2f}'.format(round(get_direction(current_position, target_position), 2))
+                if server_options.get('show_angle') 
+                and None not in current_position
+                else None
+            ),
+            "direction": (
+                '{:.2f}'.format(round(get_direction(current_position, target_position, current_angle), 2))
+                if server_options.get('show_angle')
+                and None not in current_position
+                and current_angle is not None
+                else None
+            )
+        })
     return predictions
 
 def get_blindresult(player_data):
@@ -167,13 +156,13 @@ def get_player_data(data, type):
         return data
 
 def get_direction(current_position, target_position, current_angle=None):
-    x1, y1 = current_position
-    x2, y2 = target_position
+    x1, z1 = current_position
+    x2, z2 = target_position
 
     delta_x = x2 - x1
-    delta_y = y2 - y1
+    delta_z = z2 - z1
 
-    target_angle_rad = math.atan2(delta_y, delta_x)
+    target_angle_rad = math.atan2(delta_z, delta_x)
     target_angle_deg = math.degrees(target_angle_rad)
 
     target_angle_deg = (target_angle_deg + 270) % 360
@@ -189,16 +178,6 @@ def get_direction(current_position, target_position, current_angle=None):
     direction = (direction + 180) % 360 - 180
 
     return direction
-
-def get_coords_and_angle(command):
-    match = re.search(r'tp @s (-?\d+\.\d+) \d+\.\d+ (-?\d+\.\d+) (-?\d+\.\d+)', command)
-    if match:
-        x = float(match.group(1))
-        z = float(match.group(2))
-        angle = float(match.group(3))
-        return [x, z, angle]
-    else:
-        return None
 
 app = Flask(__name__)
 
