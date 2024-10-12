@@ -56,7 +56,7 @@ class DataFetcher:
 
     def fetch_version(self):
         res = requests.get(f'{NINBOT_BASE_URL}/api/v1/version')
-        if res.status_code == 200:
+        if res.ok:
             self.data['version'] = res.json()['version']
     
     def get_data(self):
@@ -117,6 +117,7 @@ def get_predictions(data):
                 else None
             )
         })
+        
     return predictions
 
 def get_blindresult(player_data):
@@ -136,11 +137,50 @@ def get_blindresult(player_data):
     player_data['highrollProbability'] = f"{player_data.get('highrollProbability', 0) * 100:.1f}%"
     return player_data
 
-def get_player_data(data, type):    
+import math
+
+def get_warnings(sh_data):
+    def show_portal_link_warning():
+        best_pred = sh_data['predictions'][0]
+        first_throw = sh_data['eyeThrows'][0]
+
+        approx_fp_coords_nether = (
+            first_throw['xInOverworld'] / 8,
+            first_throw['zInOverworld'] / 8
+        )
+
+        best_pred_coords_nether = (
+            best_pred['netherX'],
+            best_pred['netherZ']
+        )
+
+        max_axis_dist = max(
+            abs(approx_fp_coords_nether[0] - (best_pred_coords_nether[0] + 0.5)),
+            abs(approx_fp_coords_nether[1] - (best_pred_coords_nether[1] + 0.5))
+        )
+
+        return max_axis_dist < 24
+
+    if (not sh_data.get('eyeThrows', None) or len(sh_data.get('eyeThrows',[])) == 0
+        or not sh_data.get('predictions', None) or len(sh_data.get('predictions',[])) == 0):
+        return []
+
+    warnings = {
+        show_portal_link_warning: "You might not be able to nether travel into the stronghold due to portal linking."
+    }
+
+    return [
+        v for k, v in warnings.items() if k()
+    ]
+
+
+def get_player_data(data, type):   
     if type == 'stronghold':     
         player_data = data.get('predictions', {})
 
         data['predictions'] = get_predictions(data)
+        data['warnings'] = get_warnings(data)
+        
         return data
     elif type == 'blind':      
         player_data = data.get('blindResult', {})

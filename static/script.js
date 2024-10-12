@@ -1,17 +1,19 @@
-document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener('DOMContentLoaded', () => {
     const dataDiv = document.getElementById('data');
+
     let previousboatState = null;
     let previousangle = {};
     let previousdirection = {};
+    let previousWarnings = [];
+    let prevData = {};
 
     const update = async () => {
         const res = await fetch('/get_data');
 
         if (res.ok) {
             const jsonData = await res.json();
-            console.log(jsonData);
-
-            if (jsonData.boat.boatState !== previousboatState) {
+            
+            if (JSON.stringify(jsonData) !== prevData) {
                 const headerHTML = generateHeaderHTML(jsonData.version, jsonData.boat.boatState);
                 const existingHeader = document.getElementById('header-bar');
                 if (existingHeader) {
@@ -19,17 +21,31 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
                 dataDiv.insertAdjacentHTML('beforebegin', headerHTML);
                 previousboatState = jsonData.boat.boatState;
-            }
-            jsonData.stronghold.predictions.forEach((predictions, index) => {
-                if (predictions.angle === null && predictions.direction === null) {
-                    predictions.angle = previousangle[index];
-                    predictions.direction = previousdirection[index];
-                } else {
-                    previousangle[index] = predictions.angle;
-                    previousdirection[index] = predictions.direction;
+            
+                
+                jsonData.stronghold.predictions.forEach((predictions, index) => {
+                    if (predictions.angle === null && predictions.direction === null) {
+                        predictions.angle = previousangle[index];
+                        predictions.direction = previousdirection[index];
+                    } else {
+                        previousangle[index] = predictions.angle;
+                        previousdirection[index] = predictions.direction;
+                    }
+                });            
+                dataDiv.innerHTML = generateTable(jsonData, res.status);
+    
+
+                const warningsHTML = generateWarningsHTML(jsonData.stronghold.warnings);
+                const oldWarnings = document.getElementById('warnings');
+                if (oldWarnings) {
+                    oldWarnings.remove();
                 }
-            });            
-            dataDiv.innerHTML = generateTable(jsonData, res.status);
+
+                dataDiv.insertAdjacentHTML("beforeend", warningsHTML);
+                previousWarnings = jsonData.stronghold.warnings;
+            
+            }
+            
         } else {
             dataDiv.innerHTML = "An error occurred.<br> Is your ninbot running and has the \"Enable API\" option on?";
         }
@@ -62,21 +78,16 @@ const generateHeaderHTML = (version, boatState) => `
     </div>
 `;
 
-const generateTableHTML = (headers, bodyRows, headerWidths = undefined) => {
-    const width = Array.isArray(headerWidths) && headerWidths.length === headers.length
-        ? headerWidths : Array(headers.length).fill(100 / headers.length);
-
-    return `
-        <table id="data">
-            <thead>
-                <tr>${headers.map((header, index) => `<th style="width: ${width[index]}%;">${header}</th>`).join('')}</tr>
-            </thead>
-            <tbody>
-                ${bodyRows.join('')}
-            </tbody>
-        </table>
-    `;
-};
+const generateTableHTML = (headers, bodyRows) => `
+    <table id="data">
+        <thead>
+            <tr>${headers.map(header => `<th>${header}</th>`).join('')}</tr>
+        </thead>
+        <tbody>
+            ${bodyRows.join('')}
+        </tbody>
+    </table>
+`;
 
 const generateRowHTML = (cells) => `
     <tr>${cells.map(cell => `<td>${cell}</td>`).join('')}</tr>
@@ -177,6 +188,18 @@ const generateIdleTable = (toggleLocation, showAngle) => {
     const headerWidths = showAngle ? [26, 13, 13, 22, 26] : [32, 18, 18, 32];
     return generateTableHTML(headers, bodyRows, headerWidths);
 }
+
+const generateWarningsHTML = (warnings) => {
+    if (warnings.length === 0) {
+        return ''; 
+    }
+    
+    return `<table id='warnings' style="border: 1px solid black; background-color: white;"> 
+                <tbody>
+                    ${warnings.map(warning => `<tr><td>${warning}</td></tr>`).join('')}
+                </tbody>
+            </table>`;
+};
 
 const getCertaintyColor = (certainty) => {
     if (50 <= certainty) {
