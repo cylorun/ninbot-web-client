@@ -55,9 +55,12 @@ class DataFetcher:
                 time.sleep(5) # wait 5s before rc
 
     def fetch_version(self):
-        res = requests.get(f'{NINBOT_BASE_URL}/api/v1/version')
-        if res.ok:
-            self.data['version'] = res.json()['version']
+        try:
+            res = requests.get(f'{NINBOT_BASE_URL}/api/v1/version')
+            if res.ok:
+                self.data['version'] = res.json()['version']
+        except ConnectionError:
+            pass
     
     def get_data(self):
         return self.data
