@@ -15,6 +15,7 @@ STRONGHOLD_SSE_URL = f'{NINBOT_BASE_URL}/api/v1/stronghold/events'
 BLIND_SSE_URL = f'{NINBOT_BASE_URL}/api/v1/blind/events'
 BOAT_SSE_URL = f'{NINBOT_BASE_URL}/api/v1/boat/events'
 DIVINE_SSE_URL = f'{NINBOT_BASE_URL}/api/v1/divine/events'
+
 PORT = 31621
 
 class DataFetcher:

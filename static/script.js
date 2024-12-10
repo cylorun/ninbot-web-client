@@ -33,24 +33,27 @@ document.addEventListener('DOMContentLoaded', function () {
         } else {
             dataDiv.innerHTML = "An error occurred.<br> Is your ninbot running and has the \"Enable API\" option on?";
         }
-    };
+    }
+
     update();
     setInterval(update, 1000);
 });
 
 const generateTable = (jsonData, status) => {
-    if (status === 200) {
-        return generateStrongholdTable(jsonData.stronghold, jsonData.useChunk, jsonData.angle);
-    } else if (status === 210) {
-        return generateMisreadMessageTable();
-    } else if (status === 220) {
-        return generateBlindTable(jsonData.blind);
-    } else if (status === 230) {
-        return generateDivineTable(jsonData.divine);
-    } else if (status === 250) {
-        return generateIdleTable(jsonData.useChunk, jsonData.angle);
+    switch (status) {
+        case 200:
+            return generateStrongholdTable(jsonData.stronghold, jsonData.useChunk, jsonData.angle);
+        case 210:
+            return generateMisreadMessageTable();
+        case 220:
+            return generateBlindTable(jsonData.blind);
+        case 230:
+            return generateDivineTable(jsonData.divine);
+        case 250: 
+            return generateIdleTable(jsonData.useChunk, jsonData.angle);
+        default:
+            return ""
     }
-    return '';
 }
 
 const generateHeaderHTML = (version, boatState) => `
