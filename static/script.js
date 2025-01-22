@@ -12,12 +12,6 @@ document.addEventListener('DOMContentLoaded', function () {
             console.log(jsonData);
 
             if (jsonData.boat.boatState !== previousboatState) {
-                const headerHTML = generateHeaderHTML(jsonData.version, jsonData.boat.boatState);
-                const existingHeader = document.getElementById('header-bar');
-                if (existingHeader) {
-                    existingHeader.remove();
-                }
-                dataDiv.insertAdjacentHTML('beforebegin', headerHTML);
                 previousboatState = jsonData.boat.boatState;
             }
             jsonData.stronghold.predictions.forEach((predictions, index) => {
@@ -30,6 +24,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
             });            
             dataDiv.innerHTML = generateTable(jsonData, res.status);
+            dataDiv.innerHTML += generateEyeThrowsTable(jsonData.stronghold.eyeThrows);
         } else {
             dataDiv.innerHTML = "An error occurred.<br> Is your ninbot running and has the \"Enable API\" option on?";
         }
@@ -42,7 +37,7 @@ document.addEventListener('DOMContentLoaded', function () {
 const generateTable = (jsonData, status) => {
     switch (status) {
         case 200:
-            return generateStrongholdTable(jsonData.stronghold, jsonData.useChunk, jsonData.angle);
+            return generateStrongholdTable(jsonData.stronghold, jsonData.useChunk, jsonData.angle, jsonData.boat.boatState);
         case 210:
             return generateMisreadMessageTable();
         case 220:
@@ -56,8 +51,21 @@ const generateTable = (jsonData, status) => {
     }
 }
 
-const generateHeaderHTML = (version, boatState) => `
-    <div id="header-bar"> 
+const generateEyeThrowsTable = (eyeThrows) => {
+    const rows = eyeThrows.map((eyeThrow) => {
+        return generateRowHTML([
+            `${eyeThrow.xInOverworld}`,
+            `${eyeThrow.zInOverworld}`,
+            `${eyeThrow.angle.toFixed(1)}`,
+            `${eyeThrow.error.toFixed(4)}`
+        ]);
+    });
+
+    return generateTableHTML(["x", "z", "Angle", "Error"], rows, undefined, "throws");
+}
+
+const generateHeaderHTML = (version, boatState, id = 'header-bar') => `
+    <div id="${id}"> 
         <h1>Ninjabrain Bot<span>v${version}</span></h1>
         <ul>
             <li><img src="static/${getBoatIconFromState(boatState)}" style="image-rendering: pixelated;" /></li>
@@ -65,12 +73,12 @@ const generateHeaderHTML = (version, boatState) => `
     </div>
 `;
 
-const generateTableHTML = (headers, bodyRows, headerWidths = undefined) => {
+const generateTableHTML = (headers, bodyRows, headerWidths = undefined, id = 'data') => {
     const width = Array.isArray(headerWidths) && headerWidths.length === headers.length
         ? headerWidths : Array(headers.length).fill(100 / headers.length);
 
     return `
-        <table id="data">
+        <table id="${id}">
             <thead>
                 <tr>${headers.map((header, index) => `<th style="width: ${width[index]}%;">${header}</th>`).join('')}</tr>
             </thead>
@@ -85,11 +93,11 @@ const generateRowHTML = (cells) => `
     <tr>${cells.map(cell => `<td>${cell}</td>`).join('')}</tr>
 `;
 
-const generateStrongholdTable = (jsonData, toggleLocation, showAngle) => {
+const generateStrongholdTable = (jsonData, toggleLocation, showAngle, boatState) => {
     const headers = [
         toggleLocation ? 'Chunk' : 'Location',
         '%', 'Dist.', `Nether`,
-        showAngle ? `Angle` : ""
+        showAngle ? `Angle <img id="boat-icon" src="static/${getBoatIconFromState(boatState)}"  />` : ""
     ].filter(Boolean);
 
     const bodyRows = jsonData.predictions.map(prediction => {
@@ -98,7 +106,7 @@ const generateStrongholdTable = (jsonData, toggleLocation, showAngle) => {
 
         const angleHTML = showAngle ? 
             `${prediction.angle ? prediction.angle : "---"}
-            <span style="color: ${getColorForDirection(prediction.direction)};">
+            <span style="color: ${getColorForDirection(prediction.direction)};"> 
                 (${prediction.direction ? (prediction.direction > 0 ? "-> " : "<- ") + Math.abs(prediction.direction).toFixed(1) : "N/A"})
             </span>` 
             : "";
