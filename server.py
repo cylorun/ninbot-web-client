@@ -96,6 +96,9 @@ def get_predictions(data):
         distance = pred['overworldDistance']
         if player_position.get('isInNether'):
             distance /= 8
+            target_position = target_position[0] / 8 if target_position[0] is not None else None, target_position[1] / 8 if target_position[1] is not None else None
+            current_position = current_position[0] / 8 if current_position[0] is not None else None, current_position[1] / 8 if current_position[1] is not None else None
+        
         
         predictions.append({
             "certainty": pred['certainty'],
