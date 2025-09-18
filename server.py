@@ -81,7 +81,7 @@ def radians_to_degrees(radians):
 def get_predictions(data):
     predictions = []
     
-    for pred in data['predictions']:
+    for pred in data['predictions']: 
         chunkX = pred['chunkX']
         chunkZ = pred['chunkZ']
 

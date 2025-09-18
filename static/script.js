@@ -23,8 +23,8 @@ document.addEventListener('DOMContentLoaded', function () {
                     previousdirection[index] = predictions.direction;
                 }
             });            
-            dataDiv.innerHTML = generateTable(jsonData, res.status);
-            dataDiv.innerHTML += generateEyeThrowsTable(jsonData.stronghold.eyeThrows);
+            dataDiv.innerHTML = `<div id="data-wrapper">` + generateTable(jsonData, res.status);
+            dataDiv.innerHTML += generateEyeThrowsTable(jsonData.stronghold.eyeThrows) + `</div>`;
         } else {
             dataDiv.innerHTML = "An error occurred.<br> Is your ninbot running and has the \"Enable API\" option on?";
         }
@@ -61,26 +61,17 @@ const generateEyeThrowsTable = (eyeThrows) => {
         ]);
     });
 
-    return generateTableHTML(["x", "z", "Angle", "Error"], rows, undefined, "throws");
+    return generateTableHTML(["x", "z", "Angle", "Error"], rows, undefined, "throws", 'throw-header');
 }
 
-const generateHeaderHTML = (version, boatState, id = 'header-bar') => `
-    <div id="${id}"> 
-        <h1>Ninjabrain Bot<span>v${version}</span></h1>
-        <ul>
-            <li><img src="static/${getBoatIconFromState(boatState)}" style="image-rendering: pixelated;" /></li>
-        </ul>
-    </div>
-`;
-
-const generateTableHTML = (headers, bodyRows, headerWidths = undefined, id = 'data') => {
+const generateTableHTML = (headers, bodyRows, headerWidths = undefined, id = 'data', headerClass = 'header') => {
     const width = Array.isArray(headerWidths) && headerWidths.length === headers.length
         ? headerWidths : Array(headers.length).fill(100 / headers.length);
 
     return `
         <table id="${id}">
             <thead>
-                <tr>${headers.map((header, index) => `<th style="width: ${width[index]}%;">${header}</th>`).join('')}</tr>
+                <tr class='${headerClass}'>${headers.map((header, index) => `<th style="width: ${width[index]}%;"><div class="${headerClass}-content">${header}</div></th>`).join('')}</tr>
             </thead>
             <tbody>
                 ${bodyRows.join('')}
@@ -90,14 +81,15 @@ const generateTableHTML = (headers, bodyRows, headerWidths = undefined, id = 'da
 };
 
 const generateRowHTML = (cells) => `
-    <tr>${cells.map(cell => `<td>${cell}</td>`).join('')}</tr>
+    <tr class='throw-row'>${cells.map(cell => `<td class='throw-content'>${cell}</td>`).join('')}</tr>
 `;
 
 const generateStrongholdTable = (jsonData, toggleLocation, showAngle, boatState) => {
+    const boatHtml = `<img id="boat-icon" src="static/${getBoatIconFromState(boatState)}"  />`;
     const headers = [
         toggleLocation ? 'Chunk' : 'Location',
         '%', 'Dist.', `Nether`,
-        showAngle ? `Angle <img id="boat-icon" src="static/${getBoatIconFromState(boatState)}"  />` : ""
+        showAngle ? `Angle ${boatHtml}` : boatHtml
     ].filter(Boolean);
 
     const bodyRows = jsonData.predictions.map(prediction => {
