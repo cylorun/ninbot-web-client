@@ -10,6 +10,8 @@ import requests
 from flask import Flask, jsonify, request, render_template
 from sseclient import SSEClient
 
+CONFIG_PATH = os.path.join(os.getcwd(), 'config.json')
+
 NINBOT_BASE_URL = 'http://localhost:52533'
 STRONGHOLD_SSE_URL = f'{NINBOT_BASE_URL}/api/v1/stronghold/events' 
 BLIND_SSE_URL = f'{NINBOT_BASE_URL}/api/v1/blind/events'
@@ -68,11 +70,11 @@ def run_flask():
 
 def load_options():
     global server_options
-    if not os.path.exists(f'{os.getcwd()}\\config.json'):
-        with open(f'{os.getcwd()}\\config.json','w+') as f:
+    if not os.path.exists(CONFIG_PATH):
+        with open(CONFIG_PATH,'w+') as f:
             return json.dump(server_options, f)
         
-    with open(f'{os.getcwd()}\\config.json','r') as f:
+    with open(CONFIG_PATH,'r') as f:
         server_options = json.load(f)
 
 def radians_to_degrees(radians):
@@ -216,7 +218,7 @@ def update_option():
 
     if option in server_options:
         server_options[option] = value
-        with open(f'{os.getcwd()}\\config.json','w+') as f:
+        with open(CONFIG_PATH,'w+') as f:
             json.dump(server_options, f)
         
         return jsonify({"message": f"{option} updated"}), 200
