@@ -22,8 +22,11 @@ document.addEventListener('DOMContentLoaded', function () {
                     previousdirection[index] = predictions.direction;
                 }
             });            
-            dataDiv.innerHTML = `<div id="data-wrapper">` + generateTable(jsonData, res.status);
-            dataDiv.innerHTML += generateEyeThrowsTable(jsonData.stronghold.eyeThrows) + `</div>`;
+            dataDiv.innerHTML = `<div id="data-wrapper">` + generateTable(jsonData, res.status, previousboatState);
+            // eye measurement
+            if (res.status === 200) {
+                dataDiv.innerHTML += generateEyeThrowsTable(jsonData.stronghold.eyeThrows) + `</div>`;
+            }
         } else {
             dataDiv.innerHTML = "An error occurred.<br> Is your ninbot running and has the \"Enable API\" option on?";
         }
@@ -33,16 +36,20 @@ document.addEventListener('DOMContentLoaded', function () {
     setInterval(update, 1000);
 });
 
-const generateTable = (jsonData, status) => {
+const getBoatHtml = (boatState) => {
+    return `<img id="boat-icon" src="static/${getBoatIconFromState(boatState)}"  />`;
+}
+
+const generateTable = (jsonData, status, boatState) => {
     switch (status) {
         case 200:
             return generateStrongholdTable(jsonData.stronghold, jsonData.useChunk, jsonData.angle, jsonData.boat.boatState);
         case 210:
-            return generateMisreadMessageTable();
+            return generateMisreadMessageTable(boatState);
         case 220:
-            return generateBlindTable(jsonData.blind);
+            return generateBlindTable(jsonData.blind, boatState);
         case 230:
-            return generateDivineTable(jsonData.divine);
+            return generateDivineTable(jsonData.divine, boatState);
         case 250: 
             return generateIdleTable(jsonData.useChunk, jsonData.angle, jsonData.boat.boatState);
         default:
@@ -84,7 +91,7 @@ const generateRowHTML = (cells) => `
 `;
 
 const generateStrongholdTable = (jsonData, toggleLocation, showAngle, boatState) => {
-    const boatHtml = `<img id="boat-icon" src="static/${getBoatIconFromState(boatState)}"  />`;
+    const boatHtml = getBoatHtml(boatState);
     const headers = [
         toggleLocation ? 'Chunk' : 'Location',
         '%', 'Dist.', `Nether`,
@@ -115,8 +122,8 @@ const generateStrongholdTable = (jsonData, toggleLocation, showAngle, boatState)
     return generateTableHTML(headers, bodyRows, headerWidths);
 };
 
-const generateMisreadMessageTable = () => {
-    const headers = ["&nbsp;"];
+const generateMisreadMessageTable = (boatState) => {
+    const headers = [getBoatHtml(boatState)];
     const bodyRows = [
         generateRowHTML(["Could not determine the stronghold chunk."]),
         generateRowHTML(["You probably misread one of the eyes."]),
@@ -126,8 +133,8 @@ const generateMisreadMessageTable = () => {
     return generateTableHTML(headers, bodyRows);
 }
 
-const generateBlindTable = (jsonData) => {
-    const headers = ["&nbsp;"];
+const generateBlindTable = (jsonData, boatState) => {
+    const headers = [getBoatHtml(boatState)];
     const bodyRows = [];
 
     if (jsonData.blindResult) {
@@ -149,11 +156,11 @@ const generateBlindTable = (jsonData) => {
     return generateTableHTML(headers, bodyRows);
 }
 
-const generateDivineTable = (jsonData) => {
+const generateDivineTable = (jsonData, boatState) => {
     const divineResult = jsonData.divineResult;
 
     const headers = [
-        `Fossil ${divineResult.fossilXCoordinate}`, 's1', 's2', `s3`
+        `Fossil ${divineResult.fossilXCoordinate}`, 's1', 's2', `s3 ${getBoatHtml(boatState)}`
     ];
 
     const bodyRows = [
@@ -166,7 +173,7 @@ const generateDivineTable = (jsonData) => {
 }
 
 const generateIdleTable = (toggleLocation, showAngle, boatState) => {
-    const boatHtml = `<img id="boat-icon" src="static/${getBoatIconFromState(boatState)}"  />`;
+    const boatHtml = getBoatHtml(boatState);
     const headers = [
         toggleLocation ? 'Chunk' : 'Location',
         '%', 'Dist.', `Nether`,
