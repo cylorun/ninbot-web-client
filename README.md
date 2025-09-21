@@ -1,5 +1,16 @@
 # Ninjabrainbot Local Overlay
-Easily display data from Ninjabrain Bot on any device connected to your local network, such as your PC, phone, or tablet.
+Display [Ninjabrain Bot](https://github.com/ninjabrain1/ninjabrain-bot) data on any device with ease.
+
+<img width="1100" height="500" alt="nin" src="https://github.com/user-attachments/assets/508f8937-9dcb-438f-9aea-90d3c6a1c587" />
+
+## Supported Features
+  - [x] Fossil Divine
+  - [x] Blind coords (f3+c in nether)
+  - [x] Eye Throws
+  - [x] Boat status indicator
+  - [ ] Eye adjustment count
+  - [ ] Feedback messages (bad measurement, wrong version detected etc.)
+  - [ ] Buttons for Undo, Redo, Reset and Remove measurement
 
 ## Requirements
 - You need to use Ninjabrain Bot (version 1.5 or higher). You can download it here.
@@ -7,8 +18,8 @@ Easily display data from Ninjabrain Bot on any device connected to your local ne
 
 ## Getting started
 - Download the [latest release](https://github.com/cylorun/ninbot-overlay/releases/latest).
-- Run the downloaded file, and a window will open where you can configure stuff.
-- Once set up, open the provided URL in any browser on a device connected to the same local network (PC, phone, laptop, etc.).
+- Run the downloaded file, and a configuration window will open up along with a QR code.
+- Open the provided URL in any browser on any device **connected to the same local network** (PC, phone, laptop, etc.).
 
   ### If you are not on windows
   - Download the source code, [here](https://github.com/cylorun/ninbot-web-client/archive/refs/heads/main.zip)
@@ -19,21 +30,3 @@ Easily display data from Ninjabrain Bot on any device connected to your local ne
 
 ## Credits
 - Huge thanks to [mebuki](https://github.com/mebuki117) for adding a lot of ninjabrain bots features over to this.
-
-
-## Examples
-### Calculating:
-
-![image](https://github.com/user-attachments/assets/59732bfc-46c0-4a2e-962d-1da8eea17996)
-
-### Blind:
-
-![image](https://github.com/user-attachments/assets/f1d1359e-6f1a-4b0f-bbe4-b29157375246)
-
-### Divine:
-
-![image](https://github.com/user-attachments/assets/fe88e8ae-02fd-4ad5-88bf-8be26b0823fc)
-
-### Config ui:
-
-![image](https://github.com/user-attachments/assets/6210c76a-761d-430a-b639-25cb6cbfac21)
