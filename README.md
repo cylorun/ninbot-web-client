@@ -28,24 +28,5 @@ Display [Ninjabrain Bot](https://github.com/ninjabrain1/ninjabrain-bot) data on 
   - Run `pip install -r requirements.txt` in the directory of the project.
   - Then you can run `app.py`.
 
-
-## Examples
-### Eye Throw:
-<img width="2532" height="1170" alt="image" src="https://github.com/user-attachments/assets/23953b54-0d7e-455b-bd32-02ef9f4af91b" />
-
-
-### Blind:
-
-<img width="2532" height="1170" alt="image" src="https://github.com/user-attachments/assets/bfff27f3-f9fb-4d76-b392-165b5e1cced5" />
-
-### Divine:
-
-<img width="2532" height="1170" alt="image" src="https://github.com/user-attachments/assets/f6123378-2233-4afe-bded-923fca2f4f72" />
-
-### Config ui:
-
-![image](https://github.com/user-attachments/assets/6210c76a-761d-430a-b639-25cb6cbfac21)
-
-
 ## Credits
 - Huge thanks to [mebuki](https://github.com/mebuki117) for adding a lot of ninjabrain bots features over to this.
