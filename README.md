@@ -1,4 +1,4 @@
-# Ninjabrainbot Local Overlay
+# Ninjabrainbot Web Client
 Display [Ninjabrain Bot](https://github.com/ninjabrain1/ninjabrain-bot) data on any device with ease.
 
 <img width="1100" height="500" alt="nin" src="https://github.com/user-attachments/assets/508f8937-9dcb-438f-9aea-90d3c6a1c587" />
