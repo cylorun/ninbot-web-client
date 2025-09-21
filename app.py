@@ -28,7 +28,7 @@ class App(ctk.CTk):
         qr_label.configure(image=qr_img)
         qr_label.image = qr_img
         
-        link_label = ctk.CTkLabel(self, text=f"{App.get_ninb_page_url()}", text_color="yellow", fg_color="transparent", cursor="hand2")
+        link_label = ctk.CTkLabel(self, text=f"Scan or click to open in browser\n\n{App.get_ninb_page_url()}", text_color="yellow", fg_color="transparent", cursor="hand2")
         link_label.pack(pady=10)
         link_label.bind("<Button-1>", lambda e: webbrowser.open(App.get_ninb_page_url()))
         

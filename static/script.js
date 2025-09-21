@@ -9,7 +9,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
         if (res.ok) {
             const jsonData = await res.json();
-            console.log(jsonData);
 
             if (jsonData.boat.boatState !== previousboatState) {
                 previousboatState = jsonData.boat.boatState;
@@ -45,7 +44,7 @@ const generateTable = (jsonData, status) => {
         case 230:
             return generateDivineTable(jsonData.divine);
         case 250: 
-            return generateIdleTable(jsonData.useChunk, jsonData.angle);
+            return generateIdleTable(jsonData.useChunk, jsonData.angle, jsonData.boat.boatState);
         default:
             return ""
     }
@@ -105,7 +104,7 @@ const generateStrongholdTable = (jsonData, toggleLocation, showAngle, boatState)
 
         return generateRowHTML([
             `(${prediction.x}, ${prediction.z})`,
-            `<span style="color:${certaintyColor}">${certainty}%</span>`,
+            `<span style="color:${certaintyColor}"><b>${certainty}%</b></span>`,
             `${Math.round(prediction.distance)}`,
             `(${prediction.netherX}, ${prediction.netherZ})`,
             angleHTML
@@ -166,11 +165,12 @@ const generateDivineTable = (jsonData) => {
     return generateTableHTML(headers, bodyRows);
 }
 
-const generateIdleTable = (toggleLocation, showAngle) => {
+const generateIdleTable = (toggleLocation, showAngle, boatState) => {
+    const boatHtml = `<img id="boat-icon" src="static/${getBoatIconFromState(boatState)}"  />`;
     const headers = [
         toggleLocation ? 'Chunk' : 'Location',
         '%', 'Dist.', `Nether`,
-        showAngle ? `Angle` : ""
+        showAngle ? `Angle ${boatHtml}` : boatHtml
     ].filter(Boolean);
 
     const bodyRows = Array(5).fill(generateRowHTML([
