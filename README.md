@@ -4,6 +4,7 @@ Display [Ninjabrain Bot](https://github.com/ninjabrain1/ninjabrain-bot) data on 
 <img width="1100" height="500" alt="nin" src="https://github.com/user-attachments/assets/508f8937-9dcb-438f-9aea-90d3c6a1c587" />
 
 ## Supported Features
+  - [x] Stronghold predictions
   - [x] Fossil Divine
   - [x] Blind coords (f3+c in nether)
   - [x] Eye Throws
